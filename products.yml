@@ -1,0 +1,50 @@
+# Deployment + Service for Products microservice
+# NOTE: Replace the image with your registry/image:tag after building and pushing the Docker image.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products
+  namespace: microservices
+  labels:
+    app: products
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      containers:
+      - name: products
+        image: shridharballal30/products:v1
+        ports:
+        - containerPort: 8082
+        readinessProbe:
+          httpGet:
+            path: /api/products
+            port: 8082
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/products
+            port: 8082
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-service
+  namespace: microservices
+spec:
+  type: ClusterIP
+  selector:
+    app: products
+  ports:
+  - port: 80
+    targetPort: 8082
+
